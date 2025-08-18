@@ -1,0 +1,8 @@
+streamlit==1.46.0
+pandas==2.3.0
+numpy==1.26.4
+plotly==6.2.0
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.8.0
+scikit-learn==1.5.1
+transformers==4.55.2

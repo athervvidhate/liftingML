@@ -227,7 +227,7 @@ st.markdown("""
 # Initialize the embedder
 @st.cache_resource
 def load_embedder():
-    return RobertaSentenceEmbedder.load('./roberta_custom_st', device='cuda' if torch.cuda.is_available() else 'cpu')
+    return RobertaSentenceEmbedder.load('./roberta_finetuned', device='cuda' if torch.cuda.is_available() else 'cpu')
 
 embedder = load_embedder()
 

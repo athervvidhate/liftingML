@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter notebooks (if not needed in production)
+*.ipynb
+
+# Large data files (keep only the ones needed by the app)
+data/600k+ dataset/
+data/av-bolt.csv
+data/weightlifting_721_workouts.csv
+data/Hevy_workouts_log_100_weeks.csv
+data/Hevy_Workouts.csv
+data/strong.csv
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
