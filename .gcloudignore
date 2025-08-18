@@ -46,6 +46,7 @@ data/Hevy_workouts_log_100_weeks.csv
 data/Hevy_Workouts.csv
 data/strong.csv
 /roberta_finetuned/
+data/final_features.csv
 
 # Git
 .git/
