@@ -1,14 +1,21 @@
 import os
 import torch
 import torch.nn.functional as F
-from transformers import RobertaTokenizerFast, RobertaModel, RobertaForMaskedLM
+from transformers import RobertaTokenizerFast, RobertaModel
+from transformers import AlbertTokenizerFast, AlbertModel
 
-class RobertaSentenceEmbedder:
+class CustomSentenceEmbedder:
     def __init__(self, model_name="./roberta_finetuned", device=None):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model_name = model_name
-        self.tokenizer = RobertaTokenizerFast.from_pretrained(model_name)
-        self.model = RobertaModel.from_pretrained(model_name).to(self.device)
+
+        # Use Albert if model_name is exactly './albert_finetuned', else use Roberta
+        if model_name == "./albert_finetuned":
+            self.tokenizer = AlbertTokenizerFast.from_pretrained(model_name)
+            self.model = AlbertModel.from_pretrained(model_name).to(self.device)
+        else:
+            self.tokenizer = RobertaTokenizerFast.from_pretrained(model_name)
+            self.model = RobertaModel.from_pretrained(model_name).to(self.device)
         self.model.eval()
 
     def encode(self, sentences, batch_size=32, normalize=True):

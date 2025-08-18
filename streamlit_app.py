@@ -13,7 +13,7 @@ import ast
 
 # Add parent directory to path to import RobertaSentenceEmbedder
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from RobertaSentenceEmbedder import RobertaSentenceEmbedder
+from CustomSentenceEmbedder import CustomSentenceEmbedder
 
 # Set page config with responsive sidebar
 st.set_page_config(
@@ -227,7 +227,9 @@ st.markdown("""
 # Initialize the embedder
 @st.cache_resource
 def load_embedder():
-    return RobertaSentenceEmbedder.load('./roberta_finetuned', device='cuda' if torch.cuda.is_available() else 'cpu')
+    # Change folder to roberta_finetuned for the best performance
+    # Change device to 'mps' if you're on an apple silicon device
+    return CustomSentenceEmbedder.load('./albert_finetuned', device='cuda' if torch.cuda.is_available() else 'cpu')
 
 embedder = load_embedder()
 
@@ -241,7 +243,7 @@ def load_data(url_huge_data, url_program_features, url_final_features):
 huge_data, program_features, final_features = load_data(
     './data/cleaned_600k.csv',
     './data/program_features.csv',
-    './data/final_features.csv'
+    './data/final_features_albert.csv'
 )
 
 def find_top_n(similarity_matrix, n_programs, program, metadata, info, cluster=None, features=None):
@@ -581,7 +583,7 @@ if submitted:
             <div class="program-meta">
                 <div class="meta-item">
                     <span class="meta-label">Description:</span>
-                    <span class="meta-value">{format_field(meta['description'])}</span>
+                    <span class="meta-value">{meta['description']}</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Level:</span>
