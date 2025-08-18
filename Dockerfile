@@ -12,13 +12,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY streamlit_app.py .
-COPY RobertaSentenceEmbedder.py .
+COPY CustomSentenceEmbedder.py .
 
 COPY data/cleaned_600k.csv ./data/
 COPY data/program_features.csv ./data/
 COPY data/final_features_albert.csv ./data/
 
-COPY roberta_finetuned/ ./roberta_finetuned/
+COPY albert_finetuned/ ./albert_finetuned/
 
 RUN useradd -m -u 1000 streamlit && \
     chown -R streamlit:streamlit /app
