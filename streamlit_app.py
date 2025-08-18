@@ -19,7 +19,7 @@ from RobertaSentenceEmbedder import RobertaSentenceEmbedder
 st.set_page_config(
     layout="wide", 
     page_title='ML Workout Program Recommender',
-    page_icon="💪",
+    page_icon=None,
     initial_sidebar_state="collapsed"  # Default to collapsed for better mobile experience
 )
 
@@ -362,7 +362,7 @@ similarities = cosine_similarity(clustering_data)
 # Header
 st.markdown("""
 <div class="main-header">
-    <h1>💪 ML Powered Workout Program Recommender</h1>
+    <h1>ML Powered Workout Program Recommender</h1>
     <p>Discover your perfect workout program with machine learning</p>
 </div>
 """, unsafe_allow_html=True)
@@ -380,7 +380,7 @@ with st.sidebar:
     st.metric("Total Programs", f"{len(huge_data['title'].unique()):,}")
     st.metric("Total Exercises", f"{len(huge_data):,}")
     
-    st.markdown("### 🔧 Features")
+    st.markdown("### Features")
     st.markdown("""
     - **ML-Powered Matching**: Uses advanced fine-tuned roBERTa model to understand your goals
     - **Smart Clustering**: Groups similar programs for better recommendations using K-Means clustering
@@ -389,11 +389,11 @@ with st.sidebar:
     """)
 
 # Main form
-st.markdown("### 🚀 Create Your Perfect Workout Program")
+st.markdown("### Create Your Perfect Workout Program")
 
 with st.form("program_input_form"):
     # Program Description Section
-    st.markdown("#### 📝 Describe Your Goals")
+    st.markdown("#### Describe Your Goals")
     description_query = st.text_area(
         'What kind of workout program are you looking for?',
         placeholder='Examples: "Insane Arnold program, not for the weak. Max intensity in every exercise. Push to failure ALWAYS."\n"I want a challenging bodybuilding program focused on muscle growth with compound movements. I prefer high intensity training with progressive overload."\n"Program focused on stability, mobility, and flexibility. Lower intensity, but still challenging."',
@@ -402,7 +402,7 @@ with st.form("program_input_form"):
     )
     
     # Training Parameters Section
-    st.markdown("#### ⚙️ Training Parameters")
+    st.markdown("#### Training Parameters")
     col1, col2, col3 = st.columns(3)
     with col1:
         reps_count = st.number_input(
@@ -439,7 +439,7 @@ with st.form("program_input_form"):
         )
     
     # Program Structure Section
-    st.markdown("#### 📅 Program Structure")
+    st.markdown("#### Program Structure")
     col1, col2, col3 = st.columns(3)
     with col1:
         program_length = st.number_input(
@@ -476,7 +476,7 @@ with st.form("program_input_form"):
         )
     
     # Equipment Section
-    st.markdown("#### 🏋️ Equipment Available")
+    st.markdown("#### Equipment Available")
     equipment = st.multiselect(
         "What equipment do you have access to?",
         options=[
@@ -490,7 +490,7 @@ with st.form("program_input_form"):
     )
     
     # Recommendation Settings
-    st.markdown("#### ⚙️ Recommendation Settings")
+    st.markdown("#### Recommendation Settings")
     col1, col2, col3 = st.columns(3)
     with col1:
         n_programs = st.number_input(
@@ -540,7 +540,7 @@ if submitted:
         programs = program_recommender(query, final_features, similarities, embedder, n_programs=n_programs, within_cluster=within_cluster)
     
     # Results Section
-    st.markdown("## 🎉 Your Recommended Workout Programs")
+    st.markdown("## Your Recommended Workout Programs")
     
     for i, program in enumerate(programs):
         meta_cols = ['title', 'description', 'level', 'goal', 'equipment', 'program_length', 'time_per_workout', 'number_of_exercises']
@@ -577,34 +577,34 @@ if submitted:
         # Create program card with title and metadata always visible
         st.markdown(f"""
         <div class="program-card">
-            <div class="program-title">🏆 {format_field(meta['title'])}</div>
+            <div class="program-title">{format_field(meta['title'])}</div>
             <div class="program-meta">
                 <div class="meta-item">
-                    <span class="meta-label">📝 Description:</span>
+                    <span class="meta-label">Description:</span>
                     <span class="meta-value">{format_field(meta['description'])}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">🎚️ Level:</span>
+                    <span class="meta-label">Level:</span>
                     <span class="meta-value">{format_field(meta['level'])}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">🎯 Goal:</span>
+                    <span class="meta-label">Goal:</span>
                     <span class="meta-value">{format_field(meta['goal'])}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">🏋️ Equipment:</span>
+                    <span class="meta-label">Equipment:</span>
                     <span class="meta-value">{format_field(meta['equipment'])}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">📅 Duration:</span>
+                    <span class="meta-label">Duration:</span>
                     <span class="meta-value">{format_field(meta['program_length'])} weeks</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">⏰ Workout Time:</span>
+                    <span class="meta-label">Workout Time:</span>
                     <span class="meta-value">{format_field(meta['time_per_workout'])} min</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">💪 Exercises:</span>
+                    <span class="meta-label">Exercises:</span>
                     <span class="meta-value">{format_field(meta['number_of_exercises'])} total</span>
                 </div>
             </div>
@@ -612,12 +612,12 @@ if submitted:
         """, unsafe_allow_html=True)
         
         # Exercise details in expander
-        with st.expander(f"📋 View Complete Workout Plan - {format_field(meta['title'])}", expanded=False):
+        with st.expander(f"View Complete Workout Plan - {format_field(meta['title'])}", expanded=False):
             exercise_cols = ['week', 'day', 'exercise_name', 'reps', 'sets', 'intensity']
             program_exercises = program[exercise_cols]
             
             # Add some styling to the dataframe
-            st.markdown("#### 🏋️ Exercise Breakdown")
+            st.markdown("#### Exercise Breakdown")
             st.dataframe(
                 program_exercises,
                 use_container_width=True,
@@ -628,7 +628,7 @@ if submitted:
             col1, col2 = st.columns([3, 1])
             with col2:
                 st.download_button(
-                    label="📥 Download Program",
+                    label="Download Program",
                     data=program_exercises.to_csv(index=False).encode('utf-8'),
                     file_name=f"{format_field(meta['title']).replace(' ', '_')}_program.csv",
                     mime='text/csv',
