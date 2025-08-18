@@ -382,7 +382,7 @@ with st.sidebar:
     
     st.markdown("### Features")
     st.markdown("""
-    - **ML-Powered Matching**: Uses advanced fine-tuned roBERTa model to understand your goals
+    - **ML-Powered Matching**: Uses advanced fine-tuned ALBERT model to understand your goals
     - **Smart Clustering**: Groups similar programs for better recommendations using K-Means clustering
     - **Customizable Filters**: Specify your preferences
     - **Detailed Programs**: Get complete workout plans with exercises
