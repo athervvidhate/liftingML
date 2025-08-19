@@ -3,25 +3,30 @@ env: flex
 
 runtime_config:
   operating_system: "ubuntu22"
-  python_version: "3.13"
+  python_version: "3.12"
 
 entrypoint: streamlit run streamlit_app.py --server.port $PORT
 
 automatic_scaling:
   min_num_instances: 1
-  max_num_instances: 7
-  cool_down_period_sec: 120
+  max_num_instances: 2  
+  cool_down_period_sec: 300
   cpu_utilization:
-    target_utilization: 0.6
+    target_utilization: 0.7
 
 resources:
-  cpu: 1
-  memory_gb: 2
-  disk_size_gb: 10
+  cpu: 2
+  memory_gb: 4
+  disk_size_gb: 20
 
 beta_settings:
   cloud_sql_instances: ""
 
 build_env_variables:
-  GOOGLE_BUILD_TIMEOUT: "30m"
-  PIP_NO_CACHE_DIR: "1"
+  GOOGLE_BUILD_TIMEOUT: "45m"
+  PIP_NO_CACHE_DIR: "0"
+
+env_variables:
+  MODEL_BUCKET: "liftingml-models"
+  DATA_BUCKET: "liftingml-data"
+  GOOGLE_CLOUD_PROJECT: "liftingml"

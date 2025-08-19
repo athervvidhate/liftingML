@@ -8,17 +8,38 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import KMeans
 import ast
+import gcsfs
+from google.cloud import storage
+
+# Load environment variables for local testing
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Add parent directory to path to import RobertaSentenceEmbedder
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from CustomSentenceEmbedder import CustomSentenceEmbedder
+
+# Initialize GCS client
+try:
+    fs = gcsfs.GCSFileSystem()
+    print("✅ GCS filesystem initialized")
+except Exception as e:
+    print(f"⚠️ GCS filesystem failed: {e}")
+    fs = None
+
+# Get bucket names from environment variables
+MODEL_BUCKET = os.getenv('MODEL_BUCKET', 'liftingml-models')
+DATA_BUCKET = os.getenv('DATA_BUCKET', 'liftingml-data')
 
 # Set page config with responsive sidebar
 st.set_page_config(
     layout="wide", 
     page_title='ML Workout Program Recommender',
     page_icon=None,
-    initial_sidebar_state="collapsed"  # Default to collapsed for better mobile experience
+    initial_sidebar_state="collapsed"  
 )
 
 # Custom CSS with dark mode support
@@ -222,27 +243,86 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize the embedder
-@st.cache_resource
+@st.cache_resource(ttl=3600)
 def load_embedder():
-    # Change folder to roberta_finetuned for the best performance
-    # Change device to 'mps' if you're on an apple silicon device
-    return CustomSentenceEmbedder.load('./albert_finetuned', device='cuda' if torch.cuda.is_available() else 'cpu')
+    """Load model from Cloud Storage with fallback to local"""
+    try:
+        # Try Cloud Storage first
+        model_path = f"gs://{MODEL_BUCKET}/albert_finetuned"
+        #st.info("Loading AI model from Cloud Storage...")
+        return CustomSentenceEmbedder.load(model_path, device='cpu')
+    except Exception as e:
+        st.warning(f"Cloud Storage failed: {e}. Trying local storage...")
+        try:
+            # Fallback to local storage
+            return CustomSentenceEmbedder.load('./albert_finetuned', device='cpu')
+        except Exception as e2:
+            st.error(f"Failed to load model: {e2}")
+            return None
 
-embedder = load_embedder()
+@st.cache_data(ttl=3600)
+def load_data_from_storage():
+    """Load data from Cloud Storage with fallback to local"""
+    try:
+        #st.info("Loading workout database from Cloud Storage...")
+        
+        # Load from Cloud Storage
+        huge_data = pd.read_csv(f"gs://{DATA_BUCKET}/cleaned_600k.csv")
+        program_features = pd.read_csv(f"gs://{DATA_BUCKET}/program_features.csv")
+        final_features = pd.read_csv(f"gs://{DATA_BUCKET}/final_features_albert.csv")
+        
+        # Clean up final_features
+        if 'Unnamed: 0' in final_features.columns:
+            final_features = final_features.drop(columns=['Unnamed: 0'])
+        
+        return huge_data, program_features, final_features
+        
+    except Exception as e:
+        st.warning(f"Cloud Storage failed: {e}. Trying local storage...")
+        try:
+            # Fallback to local storage
+            huge_data = pd.read_csv('./data/cleaned_600k.csv')
+            program_features = pd.read_csv('./data/program_features.csv')
+            final_features = pd.read_csv('./data/final_features_albert.csv').drop(columns=['Unnamed: 0'])
+            return huge_data, program_features, final_features
+        except Exception as e2:
+            st.error(f"Failed to load data: {e2}")
+            return None, None, None
 
-@st.cache_data
-def load_data(url_huge_data, url_program_features, url_final_features):
-    huge_data = pd.read_csv(url_huge_data)
-    program_features = pd.read_csv(url_program_features)
-    final_features = pd.read_csv(url_final_features).drop(columns=['Unnamed: 0'])
-    return huge_data, program_features, final_features
+# Initialize session state for lazy loading
+if 'data_loaded' not in st.session_state:
+    st.session_state.data_loaded = False
+    st.session_state.huge_data = None
+    st.session_state.program_features = None
+    st.session_state.final_features = None
+    st.session_state.embedder = None
 
-huge_data, program_features, final_features = load_data(
-    './data/cleaned_600k.csv',
-    './data/program_features.csv',
-    './data/final_features_albert.csv'
-)
+# Load data only when needed
+def get_data():
+    if not st.session_state.data_loaded:
+        huge_data, program_features, final_features = load_data_from_storage()
+        if huge_data is not None:
+            st.session_state.huge_data = huge_data
+            st.session_state.program_features = program_features
+            st.session_state.final_features = final_features
+            st.session_state.data_loaded = True
+        else:
+            st.error("Failed to load data. Please refresh the page.")
+            st.stop()
+    
+    return (st.session_state.huge_data, 
+            st.session_state.program_features, 
+            st.session_state.final_features)
+
+# Get embedder only when needed
+def get_embedder():
+    if st.session_state.embedder is None:
+        # Remove the spinner and just use the info message from load_embedder
+        st.session_state.embedder = load_embedder()
+        if st.session_state.embedder is None:
+            st.error("Failed to load AI model. Please refresh the page.")
+            st.stop()
+    return st.session_state.embedder
 
 def find_top_n(similarity_matrix, n_programs, program, metadata, info, cluster=None, features=None):
     """
@@ -341,6 +421,9 @@ def dataset_setup(final_features, n_clusters=25, random_state=4):
     """
     Scales the final features and clusters them into n_clusters.
     """
+    if 'cluster' in final_features.columns:
+        final_features = final_features.drop(columns=['cluster'])
+
     scaler = StandardScaler()
     final_features_scaled = pd.DataFrame(
         scaler.fit_transform(final_features),
@@ -353,11 +436,6 @@ def dataset_setup(final_features, n_clusters=25, random_state=4):
     clustering_data['cluster'] = kmeans.fit_predict(clustering_data)
 
     return clustering_data, kmeans
-
-clustering_data, kmeans = dataset_setup(final_features)
-final_features.loc[:, 'cluster'] = clustering_data['cluster']
-
-similarities = cosine_similarity(clustering_data)
 
 # Header
 st.markdown("""
@@ -375,10 +453,6 @@ with st.sidebar:
     2. **Set your preferences** - Choose intensity, equipment, etc.
     3. **Get recommendations** - We find the best programs for you
     """)
-    
-    st.markdown("### Dataset Info")
-    st.metric("Total Programs", f"{len(huge_data['title'].unique()):,}")
-    st.metric("Total Exercises", f"{len(huge_data):,}")
     
     st.markdown("### Features")
     st.markdown("""
@@ -510,6 +584,15 @@ with st.form("program_input_form"):
         submitted = st.form_submit_button("Get Recommendations", use_container_width=True)
 
 if submitted:
+    # Load data and embedder only when form is submitted
+    huge_data, program_features, final_features = get_data()
+    embedder = get_embedder()
+    
+    # Setup clustering (this will be cached)
+    clustering_data, kmeans = dataset_setup(final_features)
+    final_features.loc[:, 'cluster'] = clustering_data['cluster']
+    similarities = cosine_similarity(clustering_data)
+    
     with st.spinner("Finding your perfect workout programs..."):
         # One-hot encode 'level', 'goal', and 'equipment'
         level_options = ["beginner", "novice", "intermediate", "advanced"]

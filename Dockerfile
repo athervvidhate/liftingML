@@ -15,6 +15,8 @@ RUN uv pip install --no-cache-dir --system -r requirements.txt
 COPY streamlit_app.py .
 COPY CustomSentenceEmbedder.py .
 
+RUN mkdir -p data albert_finetuned
+
 COPY data/cleaned_600k.csv ./data/
 COPY data/program_features.csv ./data/
 COPY data/final_features_albert.csv ./data/
@@ -33,5 +35,7 @@ ENV STREAMLIT_SERVER_HEADLESS=true
 ENV STREAMLIT_SERVER_ENABLE_CORS=false
 ENV STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
 ENV STREAMLIT_SERVER_ENABLE_WEBSOCKET=false
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
 
 CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8080", "--server.address=0.0.0.0"]
