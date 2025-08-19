@@ -5,5 +5,5 @@ numpy==1.26.4
 torch==2.8.0
 scikit-learn==1.5.1
 transformers==4.30.0
-google-cloud-aiplatform==1.10.0
-google-cloud-logging==2.10.0
+google-cloud-aiplatform
+google-cloud-logging
