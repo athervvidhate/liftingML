@@ -8,7 +8,8 @@ runtime_config:
 entrypoint: streamlit run streamlit_app.py --server.port $PORT
 
 automatic_scaling:
-  max_num_instances: 1
+  min_num_instances: 1
+  max_num_instances: 7
   cool_down_period_sec: 120
   cpu_utilization:
     target_utilization: 0.6
