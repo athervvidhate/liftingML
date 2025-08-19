@@ -1,0 +1,23 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  id: 2e6abaf8-d27e-4f52-9884-37fa43657f19
+  title: Workout Program Recommender Walkthrough
+  description: A full look into the development of the ML powered workout program recommender.
+  keywords: [workout, program, recommender, ml, ai, machine learning, artificial intelligence]
+  authors: [Atherv Vidhate]
+  github: athervvidhate/liftingML
+  toc:
+    - file: intro.md
+    - file: part1.ipynb
+    - file: part2.ipynb
+    - file: part3.ipynb
+    - file: part4.ipynb
+    - file: conclusion.md
+    
+site:
+  template: book-theme
+  title: Workout Program Recommender Walkthrough
+  options:
+    favicon: favicon.ico
+    logo: workoutbot.png
