@@ -9,8 +9,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 RUN pip install uv
-RUN uv pip install --no-cache-dir --upgrade pip && \
-    uv pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --no-cache-dir --system -r requirements.txt
 
 COPY streamlit_app.py .
 COPY CustomSentenceEmbedder.py .
