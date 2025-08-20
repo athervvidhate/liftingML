@@ -18,7 +18,7 @@ try:
 except ImportError:
     pass
 
-# Add parent directory to path to import RobertaSentenceEmbedder
+# Add parent directory to path to import CustomSentenceEmbedder
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from CustomSentenceEmbedder import CustomSentenceEmbedder
 
@@ -244,18 +244,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 @st.cache_resource(ttl=3600)
-def load_embedder():
-    """Load model from Cloud Storage with fallback to local"""
+def load_embedder(model_choice):
+    """Load selected model from Cloud Storage with fallback to local.
+
+    Args:
+        model_choice (str): 'albert' for faster loads, 'roberta' for better quality.
+    """
     try:
         # Try Cloud Storage first
-        model_path = f"gs://{MODEL_BUCKET}/albert_finetuned"
-        #st.info("Loading AI model from Cloud Storage...")
+        model_dir = 'albert_finetuned' if model_choice == 'albert' else 'roberta_finetuned'
+        model_path = f"gs://{MODEL_BUCKET}/{model_dir}"
         return CustomSentenceEmbedder.load(model_path, device='cpu')
     except Exception as e:
         st.warning(f"Cloud Storage failed: {e}. Trying local storage...")
         try:
             # Fallback to local storage
-            return CustomSentenceEmbedder.load('./albert_finetuned', device='cpu')
+            return CustomSentenceEmbedder.load(f'./{model_dir}', device='cpu')
         except Exception as e2:
             st.error(f"Failed to load model: {e2}")
             return None
@@ -269,7 +273,7 @@ def load_data_from_storage():
         # Load from Cloud Storage
         huge_data = pd.read_csv(f"gs://{DATA_BUCKET}/cleaned_600k.csv")
         program_features = pd.read_csv(f"gs://{DATA_BUCKET}/program_features.csv")
-        final_features = pd.read_csv(f"gs://{DATA_BUCKET}/final_features_albert.csv")
+        final_features = pd.read_csv(f"gs://{DATA_BUCKET}/final_features.csv")
         
         # Clean up final_features
         if 'Unnamed: 0' in final_features.columns:
@@ -283,7 +287,7 @@ def load_data_from_storage():
             # Fallback to local storage
             huge_data = pd.read_csv('./data/cleaned_600k.csv')
             program_features = pd.read_csv('./data/program_features.csv')
-            final_features = pd.read_csv('./data/final_features_albert.csv').drop(columns=['Unnamed: 0'])
+            final_features = pd.read_csv('./data/final_features.csv').drop(columns=['Unnamed: 0'])
             return huge_data, program_features, final_features
         except Exception as e2:
             st.error(f"Failed to load data: {e2}")
@@ -295,7 +299,7 @@ if 'data_loaded' not in st.session_state:
     st.session_state.huge_data = None
     st.session_state.program_features = None
     st.session_state.final_features = None
-    st.session_state.embedder = None
+    st.session_state.embedder_map = {}
 
 # Load data only when needed
 def get_data():
@@ -315,14 +319,14 @@ def get_data():
             st.session_state.final_features)
 
 # Get embedder only when needed
-def get_embedder():
-    if st.session_state.embedder is None:
-        # Remove the spinner and just use the info message from load_embedder
-        st.session_state.embedder = load_embedder()
-        if st.session_state.embedder is None:
+def get_embedder(model_choice):
+    key = 'albert' if model_choice == 'albert' else 'roberta'
+    if key not in st.session_state.embedder_map:
+        st.session_state.embedder_map[key] = load_embedder(key)
+        if st.session_state.embedder_map[key] is None:
             st.error("Failed to load AI model. Please refresh the page.")
             st.stop()
-    return st.session_state.embedder
+    return st.session_state.embedder_map[key]
 
 def find_top_n(similarity_matrix, n_programs, program, metadata, info, cluster=None, features=None):
     """
@@ -456,7 +460,7 @@ with st.sidebar:
     
     st.markdown("### Features")
     st.markdown("""
-    - **ML-Powered Matching**: Uses advanced fine-tuned ALBERT model to understand your goals
+    - **ML-Powered Matching**: Choose between fast ALBERT or more accurate RoBERTa
     - **Smart Clustering**: Groups similar programs for better recommendations using K-Means clustering
     - **Customizable Filters**: Specify your preferences
     - **Detailed Programs**: Get complete workout plans with exercises
@@ -575,7 +579,13 @@ with st.form("program_input_form"):
             help="Number of similar programs to display"
         )
     with col2:
-        st.write("")  # Add some spacing
+        model_label = st.selectbox(
+            "Model",
+            options=["Faster (ALBERT)", "Better (RoBERTa)"],
+            index=1,
+            help="ALBERT loads faster while RoBERTa provides more accurate recommendations"
+        )
+        model_choice = "albert" if "ALBERT" in model_label else "roberta"
         within_cluster = st.checkbox(
             "Within cluster only",
             value=False,
@@ -591,7 +601,7 @@ st.info("The recommender may take 30-60 seconds to load the AI model and databas
 if submitted:
     # Load data and embedder only when form is submitted
     huge_data, program_features, final_features = get_data()
-    embedder = get_embedder()
+    embedder = get_embedder(model_choice)
     
     # Setup clustering (this will be cached)
     clustering_data, kmeans = dataset_setup(final_features)
@@ -720,7 +730,8 @@ if submitted:
                     data=program_exercises.to_csv(index=False).encode('utf-8'),
                     file_name=f"{format_field(meta['title']).replace(' ', '_')}_program.csv",
                     mime='text/csv',
-                    use_container_width=True
+                    use_container_width=True,
+                    key=f"download_button_{i}"
                 )
 
 # Footer
