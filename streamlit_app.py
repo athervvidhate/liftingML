@@ -462,6 +462,8 @@ with st.sidebar:
     - **Detailed Programs**: Get complete workout plans with exercises
     """)
 
+    st.markdown("View the [walkthrough](https://athervvidhate.github.io/liftingML/) for more information.")
+
 # Main form
 st.markdown("### Create Your Perfect Workout Program")
 
