@@ -54,3 +54,6 @@ data/final_features.csv
 
 # Logs
 *.log
+
+# Jupyter Book
+/jupyter-book/
