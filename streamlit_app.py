@@ -462,7 +462,7 @@ with st.sidebar:
     - **Detailed Programs**: Get complete workout plans with exercises
     """)
 
-    st.markdown("View the [walkthrough](https://athervvidhate.github.io/liftingML/) for more information.")
+    st.markdown("View the [project walkthrough](https://workout-walkthrough.atherv.com) for details on how the model works.")
 
 # Main form
 st.markdown("### Create Your Perfect Workout Program")
@@ -584,6 +584,9 @@ with st.form("program_input_form"):
     with col3:
         st.write("")  # Add some spacing
         submitted = st.form_submit_button("Get Recommendations", use_container_width=True)
+
+# First run notice
+st.info("The recommender may take 30-60 seconds to load the AI model and database on the first run. Subsequent recommendations will be much faster!")
 
 if submitted:
     # Load data and embedder only when form is submitted
@@ -723,7 +726,26 @@ if submitted:
 # Footer
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #7f8c8d; padding: 2rem 0;">
-    <p>Built by Atherv Vidhate</p>
+<style>
+.simple-footer {
+    color: #7f8c8d;
+    text-align: center;
+    font-size: 1rem;
+    margin: 2rem 0 0.5rem 0;
+    padding: 0.5rem 0 0.2rem 0;
+    opacity: 0.85;
+}
+.simple-footer a {
+    color: #7f8c8d;
+    text-decoration: underline dotted;
+    transition: color 0.2s;
+}
+.simple-footer a:hover {
+    color: #4a5568;
+}
+</style>
+<div class="simple-footer">
+    Built by <a href="https://atherv.com" target="_blank">Atherv Vidhate</a> &middot;
+    <a href="https://workout-walkthrough.atherv.com" target="_blank">Project Walkthrough</a>
 </div>
 """, unsafe_allow_html=True)
