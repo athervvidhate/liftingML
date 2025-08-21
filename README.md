@@ -51,12 +51,9 @@ On the first run after startup, the app caches models, data, and clustering arti
 
 ## Infrastructure and deployment
 
-- The app is containerized with a slim Python 3.12 base image. It installs a CPU-only PyTorch wheel and project dependencies. The container exposes port 8080 for Streamlit.
+- The app is containerized with Docker. It installs a CPU-only PyTorch wheel and project dependencies. The container exposes port 8080 for Streamlit.
 - Google App Engine (Flexible) is used for deployment, with a custom runtime configuration and autoscaling between 1–2 instances by default. CPU and memory allocations are specified to balance responsiveness with cost.
 - Model and data artifacts are fetched from Google Cloud Storage using `gcsfs`. If cloud access fails, the application falls back to local copies baked into the image or present on disk.
-- Environment variables:
-  - MODEL_BUCKET: the GCS bucket containing model directories (e.g., `albert_finetuned`, `roberta_finetuned`).
-  - DATA_BUCKET: the GCS bucket containing CSV artifacts (`cleaned_600k.csv`, `program_features.csv`, `final_features.csv`).
 
 ## Design choices and trade-offs
 
