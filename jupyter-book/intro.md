@@ -9,10 +9,10 @@ Hello! Welcome to the walkthrough of my Workout Program Recommendation System. T
 2. **Feature Engineering**
     * Develop and extract meaningful features from the cleaned dataset to better capture the unique characteristics of each workout program.
 
-3. **Initial Model Training and Prediction**
+3. **Initial Model Training and Recommendation**
     * Create initial model using a Sentence Transformer for description embeddings, KMeans for clustering, and PCA for visualization. Use cosine similarity to find similar workouts to one another. Find out the issues with using a pretrained model for this task.
 
-4. **Fine-tuning Model and Prediction**
+4. **Fine-tuning Model and Updated Recommendation**
     * Fine tune a roBERTa model on the user-generated text of the dataset, then wrap the model in a custom made SentenceEmbedder class to create sentence level embeddings. Recreate sentence embeddings using the fine tuned model, and remake feature dataset using the initial process. Utilize KMeans for clustering again and view example program recommendations.
 
 5. **Final Notes**
